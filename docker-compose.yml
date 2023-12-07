@@ -1,0 +1,60 @@
+version: '3.8'
+services: 
+
+# Son dos servicios que levantara el docker compose
+  backend:
+    build: 
+    #Los contenedores se crearan con ayuda de un dockerfile
+      context: .
+      dockerfile: php.dockerfile
+      # Se le asigna nombre al contenedor
+    container_name: backend_svc
+    ports: 
+    # Se asigna el puerto
+      - 8080:80
+    volumes: 
+    # Tambien la ubicacion de donde ira el volumen de los archivos
+      - ./www/:/var/www/html
+    depends_on: 
+    # Este servicio depende de que el otro se inicie para que pueda ejecutarse
+      - database
+    networks: 
+      app_network:
+        aliases: 
+        #El nombre de la red
+          - backend_host
+
+  database:
+    build: 
+    #Los contenedores se crearan con ayuda de un dockerfile
+      context: .
+      dockerfile: mariadb.dockerfile
+       # Se le asigna nombre al contenedor
+    container_name: mariadb_svc
+    ports: 
+    # Se asigna el puerto
+      - 3307:3306
+    environment: 
+    # En este sevicio se declaran las variables de entorno de la base de datos.
+      MYSQL_DATABASE: "custom_db"
+      MYSQL_ROOT_PASSWORD: "Custom.2020"
+    volumes: 
+    # Tambien la ubicacion de donde ira el volumen de los archivos
+      - ./schemas/:/var/lib/mysql
+    networks: 
+      app_network:
+        aliases: 
+        #El nombre de la red
+          - mariadb_host
+
+volumes: 
+  www: {}
+  schemas: {}
+
+networks: 
+# Asigna el tipo de red que se va usar, en este caso es de tipo puente.
+  app_network:
+    name: app_net
+    driver: bridge
+    ipam:
+      driver: default
